@@ -167,9 +167,12 @@ name = 'Dima'
 
 
 def upd():
-    table = open("Best_Players.txt", 'w')
-    table.write('1' + ' | ' + ' Vasya' + ' | ' + '666' + '\n' + '2' + ' | ' + ' Gosha' + ' | ' + '103' + '\n')
-    table.close()
+    try:
+        table = open("Best_Players.txt")
+    except FileNotFoundError:
+        table = open("Best_Players.txt", 'w')
+        table.write('1' + ' | ' + ' Vasya' + ' | ' + '666' + '\n' + '2' + ' | ' + ' Gosha' + ' | ' + '103' + '\n')
+        table.close()
     global speed, iteration, name, score
     f.collision_handling()
     f.movement()
