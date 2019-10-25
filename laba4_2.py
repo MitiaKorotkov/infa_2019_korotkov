@@ -151,7 +151,7 @@ score = 0
 speed = 0
 iteration = 0
 score_text = c.create_text(1450, 10, text=str(score), font='Verdana 14')
-name = 'Dima1'
+name = input('Enter your name: ')
 
 
 def upd():
