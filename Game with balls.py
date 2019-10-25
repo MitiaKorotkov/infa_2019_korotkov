@@ -33,22 +33,22 @@ class Ball:
         d_x = 0
         d_y = 0
         if wall == 'right':
-            if ball.x + ball.r + d_x> WW:  # условие столкновения со стеной
+            if ball.x + ball.r - d_x > WW:  # условие столкновения со стеной
                 return True
             else:
                 return False
         elif wall == 'left':
-            if ball.x - ball.r + d_x < 0:  # условие столкновения со стеной
+            if ball.x + ball.r + d_x < 100:  # условие столкновения со стеной
                 return True
             else:
                 return False
         elif wall == 'up':
-            if ball.y - ball.r + d_y < 0:  # условие столкновения со стеной
+            if ball.y + ball.r + d_y < 100:  # условие столкновения со стеной
                 return True
             else:
                 return False
         else:
-            if ball.y + ball.r + d_y > WH:  # условие столкновения со стеной
+            if ball.y + ball.r - d_y > WH:  # условие столкновения со стеной
                 return True
             else:
                 return False
@@ -77,8 +77,8 @@ class Field(Ball):
         x = random.randrange(100, 700)
         y = random.randrange(100, 500)
         r = random.randrange(30, 50)
-        d_x = random.randrange(-20, 20)
-        d_y = random.randrange(-20, 20)
+        d_x = random.randrange(-10, 10)
+        d_y = random.randrange(-10, 10)
         a_x = random.randrange(-2, 2)
         a_y = random.randrange(-2, 2)
         self.balls.append(Ball(x, y, r, d_x, d_y, a_x, a_y, random.choice(colors)))
@@ -157,7 +157,7 @@ c.pack()
 colors = ['black', 'yellow', 'green', 'blue']
 
 f = Field()
-for i in range(1):
+for i in range(10):
     f.generation_of_ball()
 score = 0
 speed = 0
@@ -167,6 +167,9 @@ name = 'Dima'
 
 
 def upd():
+    table = open("Best_Players.txt", 'w')
+    table.write('1' + ' | ' + ' Vasya' + ' | ' + '666' + '\n' + '2' + ' | ' + ' Gosha' + ' | ' + '103' + '\n')
+    table.close()
     global speed, iteration, name, score
     f.collision_handling()
     f.movement()
