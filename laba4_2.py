@@ -118,32 +118,20 @@ def update_table(name, score):
     flag = True
     q = 1
     a = []
-    b = []
-    try:
-        table = open("Best_Players.txt")
-    except FileNotFoundError:
-        print("Создайте файл с таблицей лучших игроков")
-        exit()
+    table = open("Best_Players.txt")
     for line in table:
         a.append((int(line.split(' | ')[2]), line.split(' | ')[1]))
     table.close()
-
     for i in range(len(a)):
         if a[i][1] == name:
-            a[i] = (score, a[i][1])
+            a[i] = (score, name)
             flag = False
     if flag:
         a.append((score, name))
-
-    for i in a:
-        b.append(i[0])
-    b.sort(reverse=True)
+    a.sort(key=lambda x: x[0], reverse=True)
     table = open("Best_Players.txt", 'w')
-    for i in b:
-        for j in a:
-            if j[0] == i:
-                s = j[1]
-        table.write(str(q) + ' | ' + s + ' | ' + str(i) + '\n')
+    for i in a:
+        table.write(str(q) + ' | ' + i[1] + ' | ' + str(i[0]) + '\n')
         q += 1
     table.close()
 
@@ -163,7 +151,7 @@ score = 0
 speed = 0
 iteration = 0
 score_text = c.create_text(1450, 10, text=str(score), font='Verdana 14')
-name = 'Dima'
+name = 'Dima1'
 
 
 def upd():
