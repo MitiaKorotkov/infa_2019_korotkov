@@ -1,17 +1,17 @@
-from random import randrange as rnd, choice
+from random import randrange as rnd, choice, randint
 import tkinter as tk
 import math
 import time
 
 root = tk.Tk()
-fr = tk.Frame(root)
 root.geometry('800x600')
 canv = tk.Canvas(root, bg='white')
+canv.focus_set()
 canv.pack(fill=tk.BOTH, expand=1)
 
 
 class ball():
-    def __init__(self, x=40, y=450):
+    def __init__(self, x, y):
         """ Конструктор класса ball
         Args:
         x - начальное положение мяча по горизонтали
@@ -67,7 +67,7 @@ class ball():
         self.vx -= 0.05 * self.vx / abs(self.vx)
         self.vy -= 0.05 * self.vy / abs(self.vy)
 
-        if abs(self.vx) - 0.05 < 0  and abs(self.vy) - 0.05 < 0:
+        if abs(self.vx) - 0.05 < 0 and abs(self.vy) - 0.05 < 0:
             canv.delete(self.id)
 
     def hittest(self, obj):
@@ -86,23 +86,41 @@ class ball():
 
 class gun():
     def __init__(self):
+        self.x = 50
+        self.y = 400
         self.f2_power = 10
         self.f2_on = 0
         self.an = 1
-        self.id = canv.create_line(20, 450, 50, 420, width=7)  # FIXME: don't know how to set it...
+        self.id = canv.create_line(self.x, self.y, self.x + 30, self.y - 30,
+                                   width=7)  # FIXME: don't know how to set it...
+
+    def move_up(self, event):
+        self.y -= 2
+        canv.move(self.id, 0, -2)
+
+    def move_down(self, event):
+        self.y += 2
+        canv.move(self.id, 0, 2)
+
+    def move_right(self, event):
+        self.x += 2
+        canv.move(self.id, 0, 2)
+
+    def move_left(self, event):
+        self.x -= 2
+        canv.move(self.id, 0, -2)
 
     def fire2_start(self, event):
         self.f2_on = 1
 
     def fire2_end(self, event):
         """Выстрел мячом.
-
         Происходит при отпускании кнопки мыши.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
         """
         global balls, bullet
         bullet += 1
-        new_ball = ball()
+        new_ball = ball(self.x, self.y)
         new_ball.r += 5
         self.an = math.atan((event.y - new_ball.y) / (event.x - new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
@@ -114,14 +132,17 @@ class gun():
     def targetting(self, event=0):
         """Прицеливание. Зависит от положения мыши."""
         if event:
-            self.an = math.atan((event.y - 450) / (event.x - 20))
+            if (event.x - self.x) / abs(event.x - self.x) > 0:
+                self.an = math.atan((event.y - self.y) / (event.x - self.x))
+            else:
+                self.an = -math.pi + math.atan((event.y - self.y) / (event.x - self.x))
         if self.f2_on:
             canv.itemconfig(self.id, fill='orange')
         else:
             canv.itemconfig(self.id, fill='black')
-        canv.coords(self.id, 20, 450,
-                    20 + max(self.f2_power, 20) * math.cos(self.an),
-                    450 + max(self.f2_power, 20) * math.sin(self.an)
+        canv.coords(self.id, self.x, self.y,
+                    self.x + max(self.f2_power, 20) * math.cos(self.an),
+                    self.y + max(self.f2_power, 20) * math.sin(self.an)
                     )
 
     def power_up(self):
@@ -135,6 +156,8 @@ class gun():
 
 class target():
     def __init__(self):
+        self.vx = randint(1, 4)
+        self.vy = randint(1, 4)
         self.points = 0
         self.live = 1
 
@@ -158,6 +181,19 @@ class target():
         self.points += points
         canv.itemconfig(self.id_points, text=self.points)
 
+    def move(self):
+        if 5 > canv.coords(self.id)[0] or canv.coords(self.id)[0] > 795:
+            self.vx *= -1
+            self.x += self.vx
+            canv.move(self.id, self.vx, 0)
+        if 5 > canv.coords(self.id)[1] or canv.coords(self.id)[1] > 595:
+            self.vy *= -1
+            self.y += self.vy
+            canv.move(self.id, 0, self.vy)
+        self.x += self.vx
+        self.y += self.vy
+        canv.move(self.id, self.vx, self.vy)
+
 
 screen1 = canv.create_text(400, 300, text='', font='28')
 g1 = gun()
@@ -175,11 +211,27 @@ def new_game(event=''):
     canv.bind('<Button-1>', g1.fire2_start)
     canv.bind('<ButtonRelease-1>', g1.fire2_end)
     canv.bind('<Motion>', g1.targetting)
+    canv.bind("<Left>", g1.move_left)
+    canv.bind("<Right>", g1.move_right)
+    canv.bind("<Up>", g1.move_up)
+    canv.bind("<Down>", g1.move_down)
 
-    z = 0.03
     for i in targets:
         i.live = 1
     while len(targets) != 0 or balls:
+        if len(balls) == 0:
+            for i in targets:
+                if (i.x < g1.x < i.x + i.r) and (i.y < g1.y < i.y + i.r):
+                    canv.bind('<Button-1>', '')
+                    canv.bind('<ButtonRelease-1>', '')
+                    canv.bind("<Left>", '')
+                    canv.bind("<Right>", '')
+                    canv.bind("<Up>", '')
+                    canv.bind("<Down>", '')
+                    canv.bind('<Motion>', '')
+                    canv.itemconfig(screen1, text='Вы проиграли')
+                else:
+                    i.move()
         for b in balls:
             if b.vx == 0 and b.vy == 0:
                 canv.delete(b.id)
@@ -189,6 +241,17 @@ def new_game(event=''):
                     i.live = 0
                     i.hit()
                     targets.remove(i)
+                if (i.x < g1.x < i.x + i.r) and (i.y < g1.y < i.y + i.r):
+                    canv.bind('<Button-1>', '')
+                    canv.bind('<ButtonRelease-1>', '')
+                    canv.bind("<Left>", '')
+                    canv.bind("<Right>", '')
+                    canv.bind("<Up>", '')
+                    canv.bind("<Down>", '')
+                    canv.bind('<Motion>', '')
+                    canv.itemconfig(screen1, text='Вы проиграли')
+                else:
+                    i.move()
         if len(targets) == 0:
             canv.bind('<Button-1>', '')
             canv.bind('<ButtonRelease-1>', '')
